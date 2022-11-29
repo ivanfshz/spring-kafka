@@ -15,12 +15,27 @@ import java.util.stream.Stream;
 @Component
 @RequiredArgsConstructor
 public class KafkaProducer {
-
     private final static Logger logger = Logger.getLogger(KafkaProducer.class.getName());
 
     private final KafkaTemplate<Integer, String> kafkaTemplate;
 
-    //@EventListener(ApplicationStartedEvent.class)
+    @EventListener(ApplicationStartedEvent.class)
+    public void publishHobbitQuotes() {
+        Faker faker = Faker.instance();
+
+        for(int i = 0; i < 10; i++) {
+            int key = faker.random().nextInt(500);
+            String value = faker.hobbit().quote();
+
+            logger.info("key: " + key);
+            logger.info("key: " + key);
+
+            kafkaTemplate.send("topic_0",
+                               key,
+                               value);
+        }
+    }
+
     public void generateMessages() {
 
         Faker faker = Faker.instance();
@@ -32,5 +47,4 @@ public class KafkaProducer {
         .map(it -> kafkaTemplate.send("topic_0", faker.random().nextInt(42), it.getT2()))
         .blockLast();
     }
-
 }
