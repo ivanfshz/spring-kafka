@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
@@ -25,14 +26,14 @@ public class MessageController {
     }
 
     @PutMapping("/publish")
-    public ResponseEntity pusblishMessage() {
-        Map<Integer, String> map = kafkaProducer.publishHobbitQuotes();
+    public ResponseEntity pusblishMessage(@RequestBody String payload) {
+        Map<Integer, String> map = kafkaProducer.publishMessage(payload);
 
         map.entrySet()
             .forEach(e -> {
                 logger.info("key: " + e.getKey());
                 logger.info("value: " + e.getValue());
             });
-        return new ResponseEntity<>(kafkaProducer.publishHobbitQuotes(), HttpStatus.OK);
+        return new ResponseEntity<>(map, HttpStatus.OK);
     }
 }
