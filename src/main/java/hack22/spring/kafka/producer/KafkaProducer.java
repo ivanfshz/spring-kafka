@@ -9,31 +9,35 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 public class KafkaProducer {
+
     private final static Logger logger = Logger.getLogger(KafkaProducer.class.getName());
 
     private final KafkaTemplate<Integer, String> kafkaTemplate;
 
     @EventListener(ApplicationStartedEvent.class)
-    public void publishHobbitQuotes() {
+    public Map<Integer, String> publishHobbitQuotes() {
         Faker faker = Faker.instance();
 
+        Map<Integer, String> map = new HashMap<>();
         for(int i = 0; i < 10; i++) {
-            int key = faker.random().nextInt(500);
+
+            Integer key = faker.random().nextInt(500);
             String value = faker.hobbit().quote();
 
-            logger.info("key: " + key);
-            logger.info("key: " + key);
-
-            kafkaTemplate.send("topic_0",
+            kafkaTemplate.send("topic_1",
                                key,
                                value);
+            map.put(key, value);
         }
+        return map;
     }
 
     public void generateMessages() {
