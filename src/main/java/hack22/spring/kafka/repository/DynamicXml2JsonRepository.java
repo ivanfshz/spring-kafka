@@ -53,7 +53,7 @@ public class DynamicXml2JsonRepository {
     }
     private DBObject toDBObject(final String key, final String value) {
         ObjectMapper mapper = new ObjectMapper();
-        TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+        TypeReference<HashMap<String,Object>> typeRef = new TypeReference<>() {};
         try {
             HashMap<String,Object> map = mapper.readValue(value, typeRef);
             map.put(KEY.getValue(), key);

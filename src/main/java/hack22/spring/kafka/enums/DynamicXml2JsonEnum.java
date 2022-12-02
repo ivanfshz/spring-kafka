@@ -10,5 +10,5 @@ public enum DynamicXml2JsonEnum {
     DOCUMENT("Document"),
     XML("_xml");
 
-    private String value;
+    private final String value;
 }

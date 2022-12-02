@@ -22,8 +22,6 @@ public class XmlKafkaProducerService {
     }
     private static String getKey() {
         Faker faker = Faker.instance();
-        Integer id = faker.random().nextInt(500);
-        String key = String.valueOf(id);
-        return key;
+        return String.valueOf(faker.random().nextInt(500));
     }
 }

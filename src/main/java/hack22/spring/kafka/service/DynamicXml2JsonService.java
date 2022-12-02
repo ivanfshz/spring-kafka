@@ -25,15 +25,14 @@ public class DynamicXml2JsonService {
         return toDynamicXml2Json(record.key(), dbObject.toMap());
     }
     public DynamicXml2Json findByKey(final String key) {
-        DynamicXml2Json dynamicXml2Json = dynamicXml2JsonRepository.findByKey(key)
+        return dynamicXml2JsonRepository.findByKey(key)
                 .orElse(DynamicXml2Json.builder()
                         .key(key)
                         .message("document does not exist with the given key: " + key)
                         .build());
-        return  dynamicXml2Json;
     }
-    private final static Map<String, Object> getMap(ConsumerRecord<String, String> record) {
-        Map<String, Object> map = new HashMap();
+    private static Map<String, Object> getMap(ConsumerRecord<String, String> record) {
+        Map<String, Object> map = new HashMap<>();
         map.put(KEY.getValue(), record.key());
         map.put(XML.getValue(), xml2JsonObject(record.value()));
         return map;

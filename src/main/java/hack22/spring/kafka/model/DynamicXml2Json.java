@@ -27,24 +27,23 @@ public class DynamicXml2Json {
 
     private String message;
 
-    public static DynamicXml2Json toDynamicXml2Json(JSONObject jsonObject) {
+    public static DynamicXml2Json toDynamicXml2Json(final JSONObject jsonObject) {
         return DynamicXml2Json.builder()
                 .key(String.valueOf(getKey(jsonObject, KEY)))
                 .document((Map) getKey(jsonObject, DOCUMENT))
                 .build();
     }
-    public static final DynamicXml2Json toDynamicXml2Json(String key, Map map) {
+    public static DynamicXml2Json toDynamicXml2Json(final String key, final Map map) {
         return DynamicXml2Json.builder()
                 .key(key)
                 .document(map)
                 .build();
     }
-    private static Object getKey(JSONObject jsonObject, DynamicXml2JsonEnum key) {
+    private static Object getKey(final JSONObject jsonObject, final DynamicXml2JsonEnum key) {
         try {
-            HashMap map = new ObjectMapper().readValue(jsonObject.toString(), HashMap.class);
             return switch (key) {
                 case KEY -> jsonObject.get(key.getValue());
-                case DOCUMENT -> map;
+                case DOCUMENT -> new ObjectMapper().readValue(jsonObject.toString(), HashMap.class);
                 default -> null;
             };
         } catch (JsonProcessingException | JSONException e) {
