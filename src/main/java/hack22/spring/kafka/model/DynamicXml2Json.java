@@ -25,8 +25,6 @@ public class DynamicXml2Json {
     @JsonProperty("Document")
     private Map<String, Object> document;
 
-    private String message;
-
     public static DynamicXml2Json toDynamicXml2Json(final JSONObject jsonObject) {
         return DynamicXml2Json.builder()
                 .key(String.valueOf(getKey(jsonObject, KEY)))

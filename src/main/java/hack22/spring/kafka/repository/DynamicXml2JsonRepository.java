@@ -10,28 +10,30 @@ import hack22.spring.kafka.utils.ToJsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.bson.BsonDocument;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
 
 import static hack22.spring.kafka.enums.DynamicXml2JsonEnum.KEY;
 import static hack22.spring.kafka.enums.DynamicXml2JsonEnum.XML;
-
 @Repository
 @RequiredArgsConstructor
 public class DynamicXml2JsonRepository {
-    private static final Logger logger = Logger.getLogger(DynamicXml2JsonRepository.class.getName());
+    public static final String COLLECTION_NAME = "messages";
+    private final Logger LOGGER = LoggerFactory.getLogger(DynamicXml2JsonRepository.class);
     private final MongoTemplate mongoTemplate;
-    public DBObject saveDynamicJson(final Map<String, Object> map) {
-        DBObject dbObject = toDBObject(String.valueOf(map.get(KEY.getValue())), String.valueOf(map.get(XML.getValue())));
-        return mongoTemplate.save(dbObject, "messages3");
+    public DBObject saveDynamicJson(final Map<String, Object> map) throws RuntimeException {
+        DBObject dbObject = Optional.ofNullable(toDBObject(map))
+                .orElseThrow(() -> new RuntimeException("error"));
+        return mongoTemplate.save(dbObject, COLLECTION_NAME);
     }
     public Optional<DynamicXml2Json> findByKey(final String key) {
-        return Optional.ofNullable( mongoTemplate.getCollection("messages3")
+        return Optional.ofNullable(mongoTemplate.getCollection(COLLECTION_NAME)
                 .find(getQueryFilter(key))
                 .sort(getSortExpression())
                 .map(Document::toJson)
@@ -51,15 +53,17 @@ public class DynamicXml2JsonRepository {
                 "'}";
         return BsonDocument.parse(queryFilter);
     }
-    private DBObject toDBObject(final String key, final String value) {
+    private DBObject toDBObject(final Map map) {
         ObjectMapper mapper = new ObjectMapper();
         TypeReference<HashMap<String,Object>> typeRef = new TypeReference<>() {};
         try {
-            HashMap<String,Object> map = mapper.readValue(value, typeRef);
-            map.put(KEY.getValue(), key);
-            return new BasicDBObject(map);
+            String xml = String.valueOf(map.get(XML.getValue()));
+            String key = String.valueOf(map.get(KEY.getValue()));
+            HashMap<String,Object> mapDBObject = mapper.readValue(xml, typeRef);
+            mapDBObject.put(KEY.getValue(), key);
+            return new BasicDBObject(mapDBObject);
         } catch (JsonProcessingException e) {
-            logger.warning("Error while processing json: " + e.getMessage());
+            LOGGER.error("Error while processing json: {}", e.getMessage());
             return null;
         }
     }
