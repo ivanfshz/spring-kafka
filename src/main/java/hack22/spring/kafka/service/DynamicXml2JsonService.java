@@ -23,7 +23,7 @@ import static hack22.spring.kafka.utils.ToJsonUtils.xml2JsonObject;
 public class DynamicXml2JsonService {
     private final DynamicXml2JsonRepository dynamicXml2JsonRepository;
     public DynamicXml2Json save(ConsumerRecord<String, String> record) {
-        Map<String, Object> map = getMap(record);
+        Map<String, Object> map = toMap(record);
         DBObject dbObject = dynamicXml2JsonRepository.saveDynamicJson(map);
         return toDynamicXml2Json(record.key(), dbObject.toMap());
     }
@@ -36,7 +36,7 @@ public class DynamicXml2JsonService {
                         .content(content)
                         .build());
     }
-    private static Map<String, Object> getMap(ConsumerRecord<String, String> record) {
+    private static Map<String, Object> toMap(ConsumerRecord<String, String> record) {
         Map<String, Object> map = new HashMap<>();
         map.put(KEY.getValue(), record.key());
         map.put(XML.getValue(), xml2JsonObject(record.value()));

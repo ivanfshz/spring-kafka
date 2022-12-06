@@ -17,9 +17,7 @@ import org.springframework.stereotype.Component;
 public class XmlKafkaConsumer {
     private final Logger LOGGER = LoggerFactory.getLogger(XmlKafkaConsumer.class);
     private final DynamicXml2JsonService dynamicXml2JsonService;
-
-
-    @KafkaListener(topics = {"db_writer"},  groupId = "db-writer-test-1")
+    @KafkaListener(groupId = "${spring.kafka.consumer.group.id}", topics = "${spring.kafka.consumer.topic}")
     public void consume(@Payload ConsumerRecord<String, String> record,
                         @Header(name = KafkaHeaders.KEY, required = false) String key,
                         @Header(name = KafkaHeaders.RAW_DATA, required = false) String rawData,

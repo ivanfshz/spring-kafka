@@ -3,11 +3,11 @@
 
 ## Getting Started
 
-This project consists in a spring-boot application that receives a dynamic xml, publish it into a given kafka topic. 
-Then, a consumer subscribe to the topic will take the message, deserialize it and converts the xml into a json object representation to
-be saved in a mongoDB as a dynamic json object/document.
+This project consists in a spring-boot application that receives a HTTP request with a dynamic xml and a kafka producer will publish it in a given kafka topic. 
+Then, a consumer will take the message from the topic in xml format and deserialize, parse and convert it as a json object representation.
+Finally, it saves it in a mongoDB as a dynamic json object/document.
 
-It also contains a REST API Client to query the inserted entity. This client contains the next:
+It also contains a Rest Api Client to query the inserted entity. This client contains the next:
 
 - Endpoint to send any xml messages to a given kafka topic. 
 - Endpoint to query a given key message and see what it looks like as json format.

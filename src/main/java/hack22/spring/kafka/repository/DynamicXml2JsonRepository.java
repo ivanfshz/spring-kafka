@@ -5,7 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import hack22.spring.kafka.exception.MongoClientException;
 import hack22.spring.kafka.model.DynamicXml2Json;
+import hack22.spring.kafka.properties.MongoClientProperties;
 import hack22.spring.kafka.utils.ToJsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.bson.BsonDocument;
@@ -21,19 +23,21 @@ import java.util.Optional;
 
 import static hack22.spring.kafka.enums.DynamicXml2JsonEnum.KEY;
 import static hack22.spring.kafka.enums.DynamicXml2JsonEnum.XML;
+import static hack22.spring.kafka.enums.ResponseMessagesEnum.NO_GOOD;
+
 @Repository
 @RequiredArgsConstructor
 public class DynamicXml2JsonRepository {
-    public static final String COLLECTION_NAME = "messages";
     private final Logger LOGGER = LoggerFactory.getLogger(DynamicXml2JsonRepository.class);
+    private final MongoClientProperties mongoClientProperties;
     private final MongoTemplate mongoTemplate;
     public DBObject saveDynamicJson(final Map<String, Object> map) throws RuntimeException {
         DBObject dbObject = Optional.ofNullable(toDBObject(map))
-                .orElseThrow(() -> new RuntimeException("error"));
-        return mongoTemplate.save(dbObject, COLLECTION_NAME);
+                .orElseThrow(() -> new MongoClientException(NO_GOOD.getValue()));
+        return mongoTemplate.save(dbObject, mongoClientProperties.getCollection());
     }
     public Optional<DynamicXml2Json> findByKey(final String key) {
-        return Optional.ofNullable(mongoTemplate.getCollection(COLLECTION_NAME)
+        return Optional.ofNullable(mongoTemplate.getCollection(mongoClientProperties.getCollection())
                 .find(getQueryFilter(key))
                 .sort(getSortExpression())
                 .map(Document::toJson)

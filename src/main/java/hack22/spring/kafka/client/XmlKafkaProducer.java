@@ -10,21 +10,17 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 import static hack22.spring.kafka.enums.ResponseMessagesEnum.ALL_GOOD;
-
 @Service
 @RequiredArgsConstructor
 public class XmlKafkaProducer {
     private final Logger LOGGER = LoggerFactory.getLogger(XmlKafkaProducer.class);
     private final KafkaTemplate<String, String> kafkaTemplate;
-    public CompletableFuture<DynamicXml2JsonResponse> publishMessage(final String xml) {
-        String topic = "db_writer";
-        return sendMessage(topic, getKey(), xml);
-    }
-    private CompletableFuture<DynamicXml2JsonResponse> sendMessage(final String topic, final String key, final String message) throws  RuntimeException{
+    public CompletableFuture<DynamicXml2JsonResponse> sendMessage(final String topic,
+                                                                   final String key,
+                                                                   final String message) throws  RuntimeException {
          return kafkaTemplate.send(new ProducerRecord<>(topic, key, message))
                  .thenApplyAsync(record -> {
                          RecordMetadata metadata = record.getRecordMetadata();
@@ -46,10 +42,5 @@ public class XmlKafkaProducer {
                                  .content(meta)
                                  .build();
                  });
-    }
-    private static String getKey() {
-        Random random = new Random();
-        int number = random.nextInt(999);
-        return String.valueOf(number);
     }
 }

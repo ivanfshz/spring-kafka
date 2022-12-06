@@ -5,7 +5,7 @@ import hack22.spring.kafka.exception.NotFoundException;
 import hack22.spring.kafka.model.DynamicXml2Json;
 import hack22.spring.kafka.model.DynamicXml2JsonResponse;
 import hack22.spring.kafka.service.DynamicXml2JsonService;
-import hack22.spring.kafka.client.XmlKafkaProducer;
+import hack22.spring.kafka.service.XmlKafkaClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.concurrent.CompletableFuture;
 
-import static hack22.spring.kafka.enums.ResponseMessagesEnum.NO_GOOD;
+import static hack22.spring.kafka.enums.ResponseMessagesEnum.DOCUMENT_NOT_FOUND;
+import static hack22.spring.kafka.enums.ResponseMessagesEnum.KAFKA_CLIENT_ERROR;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
@@ -28,7 +29,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 @RequestMapping("/dynamic-xml-json")
 public class DynamicXml2JsonController {
-    private final XmlKafkaProducer xmlKafkaProducer;
+    private  final XmlKafkaClientService xmlKafkaClientService;
     private final DynamicXml2JsonService dynamicXml2JsonService;
     @GetMapping
     public ResponseEntity<String> welcome() {
@@ -40,12 +41,15 @@ public class DynamicXml2JsonController {
                     content = { @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = DynamicXml2Json.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid key supplied", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content) })
-    @GetMapping(path = "/{key}")
+    @GetMapping(path = "/json/{key}")
     public ResponseEntity<DynamicXml2JsonResponse> getByKey(@Parameter(description = "key of json to be searched")
                                                             @PathVariable String key) throws RuntimeException {
         DynamicXml2JsonResponse response =  dynamicXml2JsonService.findByKey(key)
-                                                    .orElseThrow(() -> new NotFoundException(NO_GOOD.getValue()));
+                                                    .orElseThrow(() -> new NotFoundException(DOCUMENT_NOT_FOUND.getValue()));
         return new ResponseEntity<>(response.add(
+                                            linkTo(methodOn(DynamicXml2JsonController.class)
+                                                    .welcome())
+                                                    .withSelfRel(),
                                             linkTo(methodOn(DynamicXml2JsonController.class)
                                                 .getByKey(response.getKey()))
                                                 .withSelfRel()), HttpStatus.OK);
@@ -55,16 +59,22 @@ public class DynamicXml2JsonController {
                     content = { @Content( mediaType =MediaType.APPLICATION_XML_VALUE, schema = @Schema(implementation = DynamicXml2Json.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid xml supplied", content = @Content),
             @ApiResponse(responseCode = "404", description = "Not found", content = @Content) })
-    @PostMapping(path = "/publish", consumes =  MediaType.APPLICATION_XML_VALUE)
-    public CompletableFuture<ResponseEntity<DynamicXml2JsonResponse>> publishMessage(@Parameter(description = "xml to be sent to kafka topic") @RequestBody String payload) throws RuntimeException {
-        return xmlKafkaProducer.publishMessage(payload)
-                .whenCompleteAsync((record, e) -> {
+    @PostMapping(path = "/publish/xml/topic/{topic}", consumes =  MediaType.APPLICATION_XML_VALUE)
+    public CompletableFuture<ResponseEntity<DynamicXml2JsonResponse>> publishMessage(@Parameter(description = "xml to be sent to kafka topic") @RequestBody String payload,
+                                                                                     @PathVariable(name = "topic") String topic) throws RuntimeException {
+        return xmlKafkaClientService.publishMessage(topic, payload)
+                .thenApplyAsync(record -> record.add(
+                        linkTo(methodOn(DynamicXml2JsonController.class)
+                                .welcome())
+                                .withSelfRel(),
+                        linkTo(methodOn(DynamicXml2JsonController.class)
+                                .getByKey(record.getKey()))
+                                .withSelfRel())
+                ).whenCompleteAsync((record, e) -> {
                     if (e != null) {
-                        throw new KafkaClientException(NO_GOOD.getValue());
+                        throw new KafkaClientException(KAFKA_CLIENT_ERROR.getValue());
                     }
-                }).thenApplyAsync(record -> record.add(linkTo(methodOn(DynamicXml2JsonController.class)
-                            .getByKey(record.getKey()))
-                            .withSelfRel()))
+                })
                 .thenApplyAsync(record -> new ResponseEntity<>(record, HttpStatus.OK));
     }
 }
