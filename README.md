@@ -55,10 +55,10 @@ The following guides illustrate how to use some features concretely:
 ```
 
 3. Post any xml message to the kafka topic through the rest api:
-4. 
+
 ```
 curl --request POST \
---url http://localhost:8080/dynamic-xml-json/publish \
+--url http://localhost:8080/dynamic-xml-json/publish/xml/topic/db_writer \
 --header 'Content-Type: application/xml' \
 --data '<?xml version="1.0" encoding="UTF-8"?>
 <emails>  
@@ -112,53 +112,52 @@ curl --request POST \
 
 ```
    curl --request GET \
-   --url http://localhost:8080/dynamic-xml-json/794
+   --url http://localhost:8080/dynamic-xml-json/json/794
 ```
  
 6. You will ger a response like this :
 
 ``` 
 {
-   "key": "794",
-   "message": "all good :)!",
-   "content": {
-   "emails": {
-   "email": [
-   {
-   "heading": "Hello",
-   "from": "Sonoo",
-   "to": "Vimal",
-   "body": "Hello brother, how are you!"
-   },
-   {
-   "heading": "Birth day wish",
-   "from": "Jack",
-   "to": "Peter",
-   "body": "Happy birth day Tom!"
-   },
-   {
-   "heading": "Morning walk",
-   "from": "Jaclin",
-   "to": "James",
-   "body": "Please start morning walk to stay fit!"
-   },
-   {
-   "heading": "Health Tips",
-   "from": "Kumar",
-   "to": "Kartik",
-   "body": "Smoking is injurious to health!"
-   }
-   ]
-   },
-   "_id": {
-   "$oid": "638e9af5de908171cc377822"
-   },
-   "_key": "794"
-   },
-   "_links": {
-   "self": {
-   "href": "http://localhost:8080/dynamic-xml-json/794"
-   }
-   }
-   }
+	"key": "794",
+	"message": "all good :)!",
+	"content": {
+		"emails": {
+			"email": [{
+					"heading": "Hello",
+					"from": "Sonoo",
+					"to": "Vimal",
+					"body": "Hello brother, how are you!"
+				},
+				{
+					"heading": "Birth day wish",
+					"from": "Jack",
+					"to": "Peter",
+					"body": "Happy birth day Tom!"
+				},
+				{
+					"heading": "Morning walk",
+					"from": "Jaclin",
+					"to": "James",
+					"body": "Please start morning walk to stay fit!"
+				},
+				{
+					"heading": "Health Tips",
+					"from": "Kumar",
+					"to": "Kartik",
+					"body": "Smoking is injurious to health!"
+				}
+			]
+		},
+		"_id": {
+			"$oid": "638e9af5de908171cc377822"
+		},
+		"_key": "794"
+	},
+	"_links": {
+		"self": {
+			"href": "http://localhost:8080/dynamic-xml-json/794"
+		}
+	}
+}
 ```
